@@ -2,7 +2,6 @@ from lib.utils import ProgramBd
 import os
 from time import sleep
 
-
 class Login:
       def __init__(self):
            self.bd = ProgramBd()
@@ -15,13 +14,8 @@ class Login:
                 }
            self.login =False
            self.login_user = ""
-      def contador(self, msg: str, segundos: int = 3):
-            for i in range(segundos):
-                min, seg =divmod(segundos-i, 60)
-                txt = f"{min:02d}:{seg:02d}" if segundos > 59 else f"{seg:02d}" 
-                print(f"{msg} [{txt}] segundos", end="\r")
-                sleep(1)
-            return
+           self.cat = False
+   
 
       def _menu_(self):
         print(f"+{'-' *30}+")
@@ -50,48 +44,79 @@ class Login:
                 if str(input("Deseja deslogar? [s] & [n]: ")).lower() =="s":
                     self.login = False
                     self.login_user = ""
-                    self.contador("voltando ao menu em: ")
+                    self.bd.contador("voltando ao menu em: ")
+                    if self.login_user =="admin":
+                        self.cat = False
                     return
                 else:
-                    self.contador("voltando ao menu em: ")
+                    self.bd.contador("voltando ao menu em: ")
                     return 
                 
                 
         else:
-            print(f"+{'-' *40}+")
-            print(f"|{'Login':^{40}}|")
-            print(f"+{'-' *40}+")
-            if (user:=str(input("Digite seu Login: "))):
-                if (v:=self.bd.checkUser(user)):
-                    print(f"+{'-' *40}+")
-                    if (senha:= str(input("Digite Sua Senha : "))) == v[2]:
-                            print(f"+{'-' *40}+")
-                            self.contador(("\033[1;32mLogin bem-sucedido!\033[m" + "  voltando ao menu em:"))
-                            self.login = True
-                            self.login_user = user
+            while True:
+                self._cls_()
+                print(f"+{'-' *40}+")
+                print(f"|{'Login':^{40}}|")
+                print(f"+{'-' *40}+")
+                if (user:=str(input("Digite seu Login: "))):
+                    if (v:=self.bd.checkUser(user)):
+
+                        print(f"+{'-' *40}+")
+                        if (senha:= str(input("Digite Sua Senha : "))) == v[2]:
+                                print(f"+{'-' *40}+")
+                                self.bd.contador(("\033[1;32mLogin bem-sucedido!\033[m" + "  voltando ao menu em:"))
+                                self.login = True
+                                self.login_user = user
+                        else:
+                            self.bd.contador("senha incorreta, tente novamente em: ")
+
+                        if user == "admin":
+                            self.cat = True
+                            return
+                        else:
+                            return 
                     else:
-                        print("senha incorreta")
+                        print("usuario não encontrado")
+
                 else:
-                    print("usuario não encontrado")
+                    self._cls_()
+                    self.bd.contador("User invalido, tente novamente em: ")
 
       def _createUser_(self):
             self.bd.createUser()
 
 
-      def info_user(self):
+      def info_user(self, cat: bool):
         if self.login:
-            self._cls_()
-            print(f"+{'-' *68}+")
-            print(f"|{'Usuarios Cadastrados':^{68}}|")
-            print(f"+{'-' *68}+")
-            user= self.bd.userInfo()
-            for n, users in enumerate(user, start=1):
-                print(f"|{f'[{n}] - [id: {users[0]}] [User: {users[1]}] [Senha: {users[2]}] [Name: {users[3]}] [Idade: {users[4]}]':{68}}|")
-            print(f"+{'-' *68}+")
+            def users():
+                self._cls_()
+                print(f"+{'-' *68}+")
+                print(f"|{'Usuarios Cadastrados':^{68}}|")
+                print(f"+{'-' *68}+")
+                user= self.bd.userInfo()
+                for n, users in enumerate(user, start=1):
+                    print(f"|{f'[{n}] - [id: {users[0]}] [User: {users[1]}] [Senha: {users[2]}] [Name: {users[3]}] [Idade: {users[4]}]':{68}}|")
+                print(f"+{'-' *68}+")
+            users()
+
+            if cat:
+                while True:
+                    print(f"+{'-' *68}+")
+                    op = int(input("[ [1]-Excluir user ] [ [2]-Editar usuario ] [ [0]- Sair] ]"))
+                    print(f"+{'-' *68}+")
+                    match op:
+                        case 1:
+                            self.bd._del_()
+                            self.bd.contador("Autalizando a tabela de usuarios:  ", 2)
+                            self._cls_()
+                            users()         
+
+
 
             while True:
                 str(input("\n Tecle [ENTER] para voltar ao menu"))
-                self.contador("Voltando ao menu em")
+                self.bd.contador("Voltando ao menu em")
                 self._cls_()
                 break
         else:
@@ -105,20 +130,20 @@ class Login:
                     if (op:= int(input("\n Escolha [1]- para voltar ao menu [2] - cirar usuario: "))):
                         match op:
                             case 1:
-                                self.contador("Voltando ao menu em: ")
+                                self.bd.contador("Voltando ao menu em: ")
                                 return
                             case 2:
                                 self._cls_()
-                                self.contador("direcionando em: ")
+                                self.bd.contador("direcionando em: ")
                                 self._createUser_()
                                 self._cls_()
-                                self.contador("Voltando ao menu em: ")
+                                self.bd.contador("Voltando ao menu em: ")
                                 return
                             case _:
-                                self.contador("opção invalida, tente de novo em: ")
+                                self.bd.contador("opção invalida, tente de novo em: ")
                                 continue
                 except Exception as _:
-                    self.contador("opção invalida. opções disponiveis [1] e [2]. tente novamente em: ")                
+                    self.bd.contador("opção invalida. opções disponiveis [1] e [2]. tente novamente em: ")                
                     continue
             
         
@@ -136,15 +161,15 @@ class Login:
                             case 2:
                                 self._createUser_()
                             case 3:
-                                self.info_user()
+                                self.info_user(self.cat)
                             case 0:
                                 self._cls_()
                                 exit()
                             case _:
-                                self.contador("opção invalida, tente de novo em: ")
+                                self.bd.contador("opção invalida, tente de novo em: ")
                                 continue
                 except Exception as _:
-                    self.contador("opção invalida. opções disponiveis [1] e [2] e [3] ou [0]. tente novamente em: ")                
+                    self.bd.contador("opção invalida. opções disponiveis [1] e [2] e [3] ou [0]. tente novamente em: ")                
                     continue
                     
 

@@ -1,6 +1,6 @@
 import sqlite3
 import os
-
+from time import sleep
 class   ProgramBd:
     def __init__(self):
         self.conect = sqlite3.connect('lib/info.sql')
@@ -17,6 +17,17 @@ class   ProgramBd:
                     idade INTEGER
                 )
             ''')
+
+
+
+    def contador(self, msg: str, segundos: int = 3):
+        for i in range(segundos):
+            min, seg =divmod(segundos-i, 60)
+            txt = f"{min:02d}:{seg:02d}" if segundos > 59 else f"{seg:02d}" 
+            print(f"{msg} [{txt}] segundos", end="\r")
+            sleep(1)
+        return
+    
 
     def clear(self):
         return os.system("cls")
@@ -39,6 +50,27 @@ class   ProgramBd:
                                 (login, senha, nome, idade))
             print(f"+{'-' *30}+")
             self.save()
+
+
+    def _del_(self):
+        try:
+            id_usuario = int(input("Digite o Id do Usuário que Deseja excluir: "))
+            with self.conect:
+                cursor = self.conect.execute("SELECT id FROM usuarios WHERE id = ?", (id_usuario,))
+                _id_val_ = cursor.fetchone()
+                if _id_val_:
+                    confirma = input(f"Tem certeza que deseja excluir o usuário com ID {id_usuario}? [s/n]: ").lower()
+                    if confirma == "s":
+                        self.conect.execute("DELETE FROM usuarios WHERE id = ?", (id_usuario,))
+                        self.contador(f"Usuário com ID {id_usuario} excluído.")
+                        self.save()
+                        return
+                else:
+                    self.contador("Usuário não encontrado. tente novamente em: ")
+        except Exception as e:
+            print(e)
+            sleep(10)
+
 
     def userInfo(self):
         with self.conect:
