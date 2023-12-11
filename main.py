@@ -137,7 +137,7 @@ class Login:
                                     self.bd.contador("erro id inexistente, tente novamente em: ")
                                     self._cls_()
                             case 2:
-                                _id_ = int(input("Digite o ID do usuário a ser atualizado: "))
+                                _id_ = int(input("\nDigite o ID do usuário a ser atualizado: "))
                                 if _id_ in self.bd._user_id().keys():
                                     self.Update, new_Login = self.bd.__UptadeUser__(_id_)
                                     if self.Update:
